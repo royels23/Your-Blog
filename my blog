@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamim's Private Writing Blog</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            text-align: center;
+            color: #666;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #blogContent {
+            display: none;
+        }
+
+        #postsList {
+            margin-top: 20px;
+        }
+
+        .post {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: box-shadow 0.3s;
+            position: relative;
+        }
+
+        .post:hover {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: #888;
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+        }
+
+        .delete-button {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+
+        .comments {
+            margin-top: 20px;
+        }
+
+        .comment {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .comment-content {
+            margin-bottom: 10px;
+        }
+
+        .reply-form {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .reply-form textarea {
+            width: calc(100% - 20px);
+        }
+
+        .reply-button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+        }
+
+        .reply-button:hover {
+            background-color: #2980b9;
+        }
+
+        .delete-comment-button {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+
+        .delete-comment-button:hover {
+            background-color: #c0392b;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+            textarea {
+                width: calc(100% - 20px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginForm">
+        <h1>Welcome to Tamim's Private Blog</h1>
+        <p>This blog is private. Please enter the password to access it.</p>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button onclick="checkPassword()">Submit</button>
+    </div>
+
+    <div id="blogContent" style="display: none;">
+        <h1>Welcome to Your Private Writing Blog</h1>
+        <p>Feel free to write your thoughts and reflections here.</p>
+        <textarea id="blogPost" rows="6" placeholder="Write your post here..."></textarea>
+        <button onclick="saveBlogPost()">Save Post</button>
+        <div id="postsList">
+            <h2>Your Blog Posts:</h2>
+            <!-- Blog posts will be displayed here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const userData = {
+        password: "squadistico"
+    };
+
+    let blogData = JSON.parse(localStorage.getItem("privateBlog")) || { posts: [] };
+
+    function checkPassword() {
+        const passwordInput = document.getElementById("password").value;
+        if (passwordInput === userData.password) {
+            hideElement("loginForm");
+            displayElement("blogContent");
+            displayBlogPosts();
+        } else {
+            alert("Incorrect password. Please try again.");
+        }
+    }
+
+    function saveBlogPost() {
+        const blogPost = document.getElementById("blogPost").value.trim();
+        if (blogPost !== "") {
+            const timestamp = new Date().toLocaleString();
+            const postWithTime = `${timestamp}\n${blogPost}`;
+            blogData.posts.push(postWithTime);
+            saveDataToLocalStorage();
+            displayBlogPosts();
+            clearTextarea("blogPost");
+        }
+    }
+
+    function displayBlogPosts() {
+        const postsList = document.getElementById("postsList");
+        postsList.innerHTML = "<h2>Your Blog Posts:</h2>";
+
+        blogData.posts.forEach((post, index) => {
+            const postElement = createElement("div", "post", post);
+            const timeElement = createElement("div", "post-time", getTimeFromPost(post));
+            const deleteButton = createElement("button", "delete-button", "Delete");
+            deleteButton.onclick = () => deletePost(index);
+            const commentsElement = createCommentsSection(index);
+            postElement.appendChild(deleteButton);
+            postElement.appendChild(timeElement);
+            postElement.appendChild(commentsElement);
+            postsList.appendChild(postElement);
+        });
+    }
+
+    function saveDataToLocalStorage() {
+        localStorage.setItem("privateBlog", JSON.stringify(blogData));
+    }
+
+    function displayElement(id) {
+        document.getElementById(id).style.display = "block";
+    }
+
+    function hideElement(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    function createElement(tag, className, textContent) {
+        const element = document.createElement(tag);
+        element.className = className;
+        element.innerHTML = textContent;
+        return element;
+    }
+
+    function clearTextarea(id) {
+        document.getElementById(id).value = "";
+    }
+
+    function getTimeFromPost(post) {
+        const timeArray = post.split('\n')[0].split(',');
+        return `${timeArray[0]}, ${timeArray[1]}`;
+    }
+
+    function deletePost(index) {
+        if (confirm("Are you sure you want to delete this post?")) {
+            blogData.posts.splice(index, 1);
+            saveDataToLocalStorage();
+            displayBlogPosts();
+        }
+    }
+
+    function createCommentsSection(postIndex) {
+        const commentsSection = createElement("div", "comments");
+
+        // Sample comments (you can replace this with your comment data)
+        const sampleComments = [
+            { author: "Alice", content: "Great post!" },
+            { author: "Bob", content: "I enjoyed reading this." },
+            { author: "Charlie", content: "Looking forward to more posts!" }
+        ];
+
+        sampleComments.forEach((comment, commentIndex) => {
+            const commentElement = createElement("div", "comment");
+            const authorElement = createElement("div", "comment-author", comment.author);
+            const contentElement = createElement("div", "comment-content", comment.content);
+            const replyButton = createElement("button", "reply-button", "Reply");
+            const deleteCommentButton = createElement("button", "delete-comment-button", "Delete");
+            
+            // Add functionality to reply and delete buttons
+            replyButton.onclick = () => showReplyForm(postIndex, commentIndex);
+            deleteCommentButton.onclick = () => deleteComment(postIndex, commentIndex);
+
+            commentElement.appendChild(deleteCommentButton);
+            commentElement.appendChild(authorElement);
+            commentElement.appendChild(contentElement);
+            commentElement.appendChild(replyButton);
+            const replyForm = createElement("div", "reply-form");
+            replyForm.innerHTML = `<textarea id="replyText-${postIndex}-${commentIndex}" rows="2" placeholder="Reply..."></textarea>
+                                  <button onclick="saveReply(${postIndex}, ${commentIndex})">Save Reply</button>`;
+            commentElement.appendChild(replyForm);
+
+            commentsSection.appendChild(commentElement);
+        });
+
+        return commentsSection;
+    }
+
+    function showReplyForm(postIndex, commentIndex) {
+        const replyForm = document.getElementById(`replyText-${postIndex}-${commentIndex}`).parentNode;
+        replyForm.style.display = "block";
+    }
+
+    function saveReply(postIndex, commentIndex) {
+        const replyText = document.getElementById(`replyText-${postIndex}-${commentIndex}`).value.trim();
+        if (replyText !== "") {
+            const timestamp = new Date().toLocaleString();
+            const reply = `${timestamp}\n${replyText}`;
+            blogData.posts[postIndex] += `\n  Reply to Comment #${commentIndex + 1}:\n  ${reply}`;
+            saveDataToLocalStorage();
+            displayBlogPosts();
+        }
+    }
+
+    function deleteComment(postIndex, commentIndex) {
+        if (confirm("Are you sure you want to delete this comment?")) {
+            blogData.posts[postIndex] = blogData.posts[postIndex].replace(`Reply to Comment #${commentIndex + 1}:`, '');
+            saveDataToLocalStorage();
+            displayBlogPosts();
+        }
+    }
+
+    displayBlogPosts(); // Display existing posts on page load
+</script>
+
+</body>
+</html>
